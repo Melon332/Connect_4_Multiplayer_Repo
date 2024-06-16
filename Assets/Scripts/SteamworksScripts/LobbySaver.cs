@@ -5,6 +5,6 @@ using UnityEngine;
 
 public static class LobbySaver
 {
-    public static Lobby CurrentLobby { get; set; }
+    public static Lobby? CurrentLobby { get; set; }
 }
 

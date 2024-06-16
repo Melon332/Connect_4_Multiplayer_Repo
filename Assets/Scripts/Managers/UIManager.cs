@@ -25,6 +25,7 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
     [SerializeField] private Button hostLobbyButton;
     [SerializeField] private Button joinLobbyButton;
     [SerializeField] private Button backToMenuButton;
+    [SerializeField] private Button copyIDButton;
     
     [Header("InputFields and Texts")]
     [SerializeField] private TMP_InputField lobbyIDInputField;
@@ -58,6 +59,14 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
         SetLobbyID(ID);
     }
 
+    public void CopyID()
+    {
+        TextEditor textEditor = new TextEditor();
+        textEditor.text = lobbyIDDisplay.text;
+        textEditor.SelectAll();
+        textEditor.Copy();
+    }
+    
     public string GetLobbyIDText()
     {
         return lobbyIDInputField.text;

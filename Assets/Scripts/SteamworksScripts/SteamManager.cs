@@ -40,8 +40,9 @@ public class SteamManager : MonoBehaviour
     
     private void LeaveLobby()
     {
-        LobbySaver.CurrentLobby.Leave();
+        LobbySaver.CurrentLobby?.Leave();
         UIManager.Instance.LeftLobby("");
+        LobbySaver.CurrentLobby = null;
     }
     
     private async void SteamFriendsOnGameLobbyJoinRequested(Lobby lobby, SteamId steamID)
