@@ -2,6 +2,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public enum MenuStates {
@@ -31,6 +32,13 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
     [SerializeField] private TMP_InputField lobbyIDInputField;
     [SerializeField] private TextMeshProUGUI lobbyIDDisplay;
 
+    [Header("Message System Variables")] 
+    [SerializeField] private TMP_InputField messageField;
+    [SerializeField] private TextMeshProUGUI messageTemplate;
+    [SerializeField] private GameObject messageContainer;
+    
+    
+
     private MenuStates currentMenuState;
     private MenuStates previousMenuState;
     
@@ -47,15 +55,13 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
 
     public void JoinedLobby(string ID)
     {
-        mainMenuPanel.SetActive(false);
-        inLobbyPanel.SetActive(true);
+        SetMenuState(MenuStates.Lobby);
         SetLobbyID(ID);
     }
     
     public void LeftLobby(string ID)
     {
-        mainMenuPanel.SetActive(true);
-        inLobbyPanel.SetActive(false);
+        SetMenuState(MenuStates.MainMenu);
         SetLobbyID(ID);
     }
 
@@ -75,6 +81,38 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
     public void SetLobbyID(string ID)
     {
         lobbyIDDisplay.text = ID;
+    }
+
+    public void ToggleChatBox()
+    {
+        if (currentMenuState != MenuStates.Lobby) return;
+        if (messageField.IsActive())
+        {
+            if (!string.IsNullOrEmpty(messageField.text))
+            {
+                LobbySaver.CurrentLobby?.SendChatString(messageField.text);
+            }
+            messageField.gameObject.SetActive(false);
+            EventSystem.current.SetSelectedGameObject(null);
+        }
+        else
+        {
+            messageField.gameObject.SetActive(true);
+            EventSystem.current.SetSelectedGameObject(messageField.gameObject);
+        }
+
+        messageField.text = "";
+    }
+
+    public void ReceivedMessage(string message, string sender = null)
+    {
+        TextMeshProUGUI temp = Instantiate(messageTemplate.gameObject, messageContainer.transform).GetComponent<TextMeshProUGUI>();
+        temp.text = $"{sender}: {message}";
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 
     public void SetHostLobbyButtonMethod(UnityAction method)
@@ -106,12 +144,23 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
                 mainMenuPanel.SetActive(true);
                 inLobbyPanel.SetActive(false);
                 setupPanel.SetActive(false);
+                ClearMessageContainer();
                 break;
             case MenuStates.Lobby:
                 inLobbyPanel.SetActive(true);
                 mainMenuPanel.SetActive(false);
                 setupPanel.SetActive(false);
                 break;
+        }
+
+        currentMenuState = state;
+    }
+
+    private void ClearMessageContainer()
+    {
+        for (int i = 0; i < messageContainer.transform.childCount; i++)
+        {
+            Destroy(messageContainer.transform.GetChild(i).gameObject);
         }
     }
 }

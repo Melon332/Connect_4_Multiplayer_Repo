@@ -53,8 +53,8 @@ public class SteamManager : MonoBehaviour
     private void SteamMatchmakingOnLobbyEntered(Lobby lobby)
     {
         LobbySaver.CurrentLobby = lobby;
-        Debug.Log($"We've entered the lobby with id: {lobby.Id.ToString()}");
         UIManager.Instance.JoinedLobby(lobby.Id.ToString());
+        LobbySaver.CurrentLobby?.SendChatString("has joined the match!");
     }
 
     private void SteamMatchmakingOnLobbyCreated(Result result, Lobby lobby)
@@ -63,18 +63,32 @@ public class SteamManager : MonoBehaviour
         lobby.SetPublic();
         lobby.SetJoinable(true);
     }
+    
+    private void SteamMatchmakingOnChatMessage(Lobby lobby, Friend sender, string message)
+    {
+        UIManager.Instance.ReceivedMessage(message, sender.Name);
+    }
+    
+    private void SteamMatchmakingOnLobbyMemberLeave(Lobby lobby, Friend user)
+    {
+        lobby.SendChatString("has left the match!");
+    }
 
     private void OnEnable()
     {
        SteamMatchmaking.OnLobbyCreated += SteamMatchmakingOnLobbyCreated;
        SteamMatchmaking.OnLobbyEntered += SteamMatchmakingOnLobbyEntered;
+       SteamMatchmaking.OnChatMessage += SteamMatchmakingOnChatMessage;
+       SteamMatchmaking.OnLobbyMemberLeave += SteamMatchmakingOnLobbyMemberLeave;
        SteamFriends.OnGameLobbyJoinRequested += SteamFriendsOnGameLobbyJoinRequested;
     }
-    
+
     private void OnDisable()
     {
         SteamMatchmaking.OnLobbyCreated -= SteamMatchmakingOnLobbyCreated;
         SteamMatchmaking.OnLobbyEntered -= SteamMatchmakingOnLobbyEntered;
+        SteamMatchmaking.OnChatMessage -= SteamMatchmakingOnChatMessage;
+        SteamMatchmaking.OnLobbyMemberLeave -= SteamMatchmakingOnLobbyMemberLeave;
         SteamFriends.OnGameLobbyJoinRequested -= SteamFriendsOnGameLobbyJoinRequested;
     }
 }
