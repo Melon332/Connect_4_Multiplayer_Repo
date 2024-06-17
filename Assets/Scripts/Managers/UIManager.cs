@@ -1,3 +1,4 @@
+using Steamworks;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -10,6 +11,12 @@ public enum MenuStates {
     MainMenu,
     Lobby,
     Game
+}
+
+public enum MessageType
+{
+    Player,
+    System
 }
 
 public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
@@ -61,6 +68,7 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
     
     public void LeftLobby(string ID)
     {
+        //Reset Menu state back to main menu
         SetMenuState(MenuStates.MainMenu);
         SetLobbyID(ID);
     }
@@ -85,12 +93,13 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
 
     public void ToggleChatBox()
     {
+        //Make sure we cant open the input field while we are not in the lobby scene
         if (currentMenuState != MenuStates.Lobby) return;
         if (messageField.IsActive())
         {
             if (!string.IsNullOrEmpty(messageField.text))
             {
-                LobbySaver.CurrentLobby?.SendChatString(messageField.text);
+                LobbySaver.CurrentLobby.SendChatString(messageField.text);
             }
             messageField.gameObject.SetActive(false);
             EventSystem.current.SetSelectedGameObject(null);
@@ -106,13 +115,41 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
 
     public void ReceivedMessage(string message, string sender = null)
     {
+        //Instaniate a new lobby message
         TextMeshProUGUI temp = Instantiate(messageTemplate.gameObject, messageContainer.transform).GetComponent<TextMeshProUGUI>();
         temp.text = $"{sender}: {message}";
+    }
+    
+    public void SystemMessage(string message, string sender = null)
+    {
+        //Instaniate a new lobby message
+        TextMeshProUGUI temp = Instantiate(messageTemplate.gameObject, messageContainer.transform).GetComponent<TextMeshProUGUI>();
+        temp.text = $"{sender} {message}";
+    }
+
+    public void DelegateMessage(MessageType messageType, string message, string sender)
+    {
+        switch (messageType)
+        {
+            case MessageType.Player:
+                ReceivedMessage(message, sender);
+                break;
+            case MessageType.System:
+                SystemMessage(message, sender);
+                break;
+            default:
+                break;
+        }
     }
 
     public void QuitGame()
     {
         Application.Quit();
+    }
+
+    public void InviteFriendToGame()
+    {
+        SteamFriends.OpenGameInviteOverlay(LobbySaver.CurrentLobby.Id);
     }
 
     public void SetHostLobbyButtonMethod(UnityAction method)

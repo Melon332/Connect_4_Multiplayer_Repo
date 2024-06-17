@@ -40,9 +40,8 @@ public class SteamManager : MonoBehaviour
     
     private void LeaveLobby()
     {
-        LobbySaver.CurrentLobby?.Leave();
+        LobbySaver.CurrentLobby.Leave();
         UIManager.Instance.LeftLobby("");
-        LobbySaver.CurrentLobby = null;
     }
     
     private async void SteamFriendsOnGameLobbyJoinRequested(Lobby lobby, SteamId steamID)
@@ -54,7 +53,7 @@ public class SteamManager : MonoBehaviour
     {
         LobbySaver.CurrentLobby = lobby;
         UIManager.Instance.JoinedLobby(lobby.Id.ToString());
-        LobbySaver.CurrentLobby?.SendChatString("has joined the match!");
+        LobbySaver.CurrentLobby.SendChatString("has joined the match!");
     }
 
     private void SteamMatchmakingOnLobbyCreated(Result result, Lobby lobby)
@@ -66,12 +65,23 @@ public class SteamManager : MonoBehaviour
     
     private void SteamMatchmakingOnChatMessage(Lobby lobby, Friend sender, string message)
     {
-        UIManager.Instance.ReceivedMessage(message, sender.Name);
+        if (message.Contains("left"))
+        {
+            UIManager.Instance.DelegateMessage(MessageType.System, message, "SYSTEM:");
+            return;
+        }
+
+        if (message.Contains("joined"))
+        {
+            UIManager.Instance.DelegateMessage(MessageType.System, message, $"SYSTEM: {sender.Name}");
+            return;
+        }
+        UIManager.Instance.DelegateMessage(MessageType.Player, message, sender.Name);
     }
     
     private void SteamMatchmakingOnLobbyMemberLeave(Lobby lobby, Friend user)
     {
-        lobby.SendChatString("has left the match!");
+        lobby.SendChatString($"{user.Name} has left the match!");
     }
 
     private void OnEnable()

@@ -11,5 +11,10 @@ public class PlayerManager : MonoBehaviour
         {
             UIManager.Instance.ToggleChatBox();
         }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            GameManager.Instance.StartGame();
+        }
     }
 }
