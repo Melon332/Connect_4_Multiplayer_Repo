@@ -21,6 +21,12 @@ public class SceneLoaderManager : MonoBehaviourSingletonPersistent<SceneLoaderMa
         LoadUISceneAdditive();
     }
 
+    public void LoadSceneNet(string name)
+    {
+        NetworkManager.Singleton.SceneManager.LoadScene(name, LoadSceneMode.Single);
+        LoadUISceneAdditive();
+    }
+
     IEnumerator LoadMainScene()
     {
         yield return new WaitUntil(() => NetworkManager.Singleton != null);

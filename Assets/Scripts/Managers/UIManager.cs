@@ -4,6 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public enum MenuStates {
@@ -34,6 +35,7 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
     [SerializeField] private Button joinLobbyButton;
     [SerializeField] private Button backToMenuButton;
     [SerializeField] private Button copyIDButton;
+    [SerializeField] private Button startGameButton;
     
     [Header("InputFields and Texts")]
     [SerializeField] private TMP_InputField lobbyIDInputField;
@@ -57,7 +59,22 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
         mainMenuPanel.SetActive(false);
         inLobbyPanel.SetActive(false);
         setupPanel.SetActive(true);
-        SetMenuState(MenuStates.MainMenu);
+
+        CheckCurrentLoadedScene();
+    }
+
+    private void CheckCurrentLoadedScene()
+    {
+        string loadedScene = SceneManager.GetActiveScene().name;
+        switch (loadedScene)
+        {
+            case "MainMenu":
+                SetMenuState(MenuStates.MainMenu);
+                break;
+            case "Gameplay":
+                SetMenuState(MenuStates.Game);
+                break;
+        }
     }
 
     public void JoinedLobby(string ID)
@@ -142,6 +159,11 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
         }
     }
 
+    public void ToggleStartGameButton(bool isHost)
+    {
+        startGameButton.gameObject.SetActive(isHost);
+    }
+
     public void QuitGame()
     {
         Application.Quit();
@@ -166,6 +188,12 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
     {
         backToMenuButton.onClick.AddListener(method);
     }
+    
+    public void SetStartGameButtonMethod(UnityAction method)
+    {
+        startGameButton.onClick.AddListener(method);
+    }
+
 
     public void SetMenuState(MenuStates state)
     {
@@ -187,6 +215,12 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
                 inLobbyPanel.SetActive(true);
                 mainMenuPanel.SetActive(false);
                 setupPanel.SetActive(false);
+                break;
+            case MenuStates.Game:
+                inLobbyPanel.SetActive(false);
+                mainMenuPanel.SetActive(false);
+                setupPanel.SetActive(false);
+                //ACTIVATE HUD
                 break;
         }
 
