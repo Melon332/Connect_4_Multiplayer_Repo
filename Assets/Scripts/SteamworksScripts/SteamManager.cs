@@ -6,23 +6,16 @@ using UnityEngine;
 using Steamworks;
 using Steamworks.Data;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
 
 public class SteamManager : MonoBehaviour
 {
-    private void Start()
-    {
-        UIManager.Instance.SetHostLobbyButtonMethod(HostLobby);
-        UIManager.Instance.SetJoinLobbyButtonMethod(JoinLobbyWithID);
-        UIManager.Instance.SetReturnToMenuButtonMethod(LeaveLobby);
-        UIManager.Instance.SetStartGameButtonMethod(ServerStartGame);
-    }
-
-    private async void HostLobby()
+    public async void HostLobby()
     {
         await SteamMatchmaking.CreateLobbyAsync(2);
     }
 
-    private async void JoinLobbyWithID()
+    public async void JoinLobbyWithID()
     {
         ulong ID;
         if (!ulong.TryParse(UIManager.Instance.GetLobbyIDText(), out ID))
@@ -39,9 +32,10 @@ public class SteamManager : MonoBehaviour
                 return;
             }
         }
+        Debug.Log("?");
     }
     
-    private void LeaveLobby()
+    public void LeaveLobby()
     {
         LobbySaver.CurrentLobby.Leave();
         UIManager.Instance.LeftLobby("");
@@ -93,10 +87,9 @@ public class SteamManager : MonoBehaviour
     private void SteamMatchmakingOnLobbyMemberLeave(Lobby lobby, Friend user)
     {
         lobby.SendChatString($"{user.Name} has left the match!");
-        NetworkManager.Singleton.Shutdown();
     }
 
-    private void ServerStartGame()
+    public void ServerStartGame()
     {
         if (!NetworkManager.Singleton.IsHost) return;
         SceneLoaderManager.Instance.LoadSceneNet("Gameplay");

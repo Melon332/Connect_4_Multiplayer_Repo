@@ -27,7 +27,7 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
 
     [Header("Main Panels")] 
     [SerializeField] private GameObject mainMenuPanel;
-    [SerializeField] private GameObject setupPanel;
+    //[SerializeField] private GameObject setupPanel;
     [SerializeField] private GameObject inLobbyPanel;
     
     [Header("Buttons")] 
@@ -54,11 +54,11 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
     public override void Awake()
     {
         base.Awake();
-        uiCamera.gameObject.SetActive(false);
+        //uiCamera.gameObject.SetActive(false);
         
-        mainMenuPanel.SetActive(false);
+        //mainMenuPanel.SetActive(false);
         inLobbyPanel.SetActive(false);
-        setupPanel.SetActive(true);
+        //setupPanel.SetActive(true);
 
         CheckCurrentLoadedScene();
     }
@@ -88,12 +88,15 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
         //Reset Menu state back to main menu
         SetMenuState(MenuStates.MainMenu);
         SetLobbyID(ID);
+        NetworkManager.Singleton.Shutdown();
     }
 
     public void CopyID()
     {
-        TextEditor textEditor = new TextEditor();
-        textEditor.text = lobbyIDDisplay.text;
+        TextEditor textEditor = new TextEditor
+        {
+            text = lobbyIDDisplay.text
+        };
         textEditor.SelectAll();
         textEditor.Copy();
     }
@@ -177,11 +180,13 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
     public void SetHostLobbyButtonMethod(UnityAction method)
     {
         hostLobbyButton.onClick.AddListener(method);
+        
     }
 
     public void SetJoinLobbyButtonMethod(UnityAction method)
     {
         joinLobbyButton.onClick.AddListener(method);
+        Debug.Log("yes2");
     }
 
     public void SetReturnToMenuButtonMethod(UnityAction method)
@@ -201,25 +206,25 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
         switch (state)
         {
             case MenuStates.Setup:
-                setupPanel.SetActive(true);
+                //setupPanel.SetActive(true);
                 mainMenuPanel.SetActive(false);
                 inLobbyPanel.SetActive(false);
                 break;
             case MenuStates.MainMenu:
                 mainMenuPanel.SetActive(true);
                 inLobbyPanel.SetActive(false);
-                setupPanel.SetActive(false);
+                //setupPanel.SetActive(false);
                 ClearMessageContainer();
                 break;
             case MenuStates.Lobby:
                 inLobbyPanel.SetActive(true);
                 mainMenuPanel.SetActive(false);
-                setupPanel.SetActive(false);
+                //setupPanel.SetActive(false);
                 break;
             case MenuStates.Game:
                 inLobbyPanel.SetActive(false);
                 mainMenuPanel.SetActive(false);
-                setupPanel.SetActive(false);
+                //setupPanel.SetActive(false);
                 //ACTIVATE HUD
                 break;
         }

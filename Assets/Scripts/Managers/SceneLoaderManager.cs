@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,26 +7,20 @@ public class SceneLoaderManager : MonoBehaviourSingletonPersistent<SceneLoaderMa
 {
     private void Start()
     {
-        StartCoroutine(LoadMainScene());
-    }
-
-    public void LoadUISceneAdditive()
-    {
-        SceneManager.LoadScene("UI", LoadSceneMode.Additive);
+        StartCoroutine(LoadMainMenuScene());
     }
     public void LoadScene(string name)
     {
         SceneManager.LoadScene(name);
-        LoadUISceneAdditive();
     }
 
+    
     public void LoadSceneNet(string name)
     {
         NetworkManager.Singleton.SceneManager.LoadScene(name, LoadSceneMode.Single);
-        LoadUISceneAdditive();
     }
 
-    IEnumerator LoadMainScene()
+    IEnumerator LoadMainMenuScene()
     {
         yield return new WaitUntil(() => NetworkManager.Singleton != null);
         LoadScene("MainMenu");
