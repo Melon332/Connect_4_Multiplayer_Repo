@@ -24,22 +24,61 @@ public class Board
         this.rows = rows;
     }
 
-    public void PrintBoard()
+    public void InitalizeBoard()
     {
         string demo = String.Empty;
-        for (int i = 0; i < rows - 1; i++)
+        for (int i = 0; i < rows; i++)
         {
-            demo += $"{i} ";
+            gameBoard[i][0] = rows - i;
             for (int j = 0; j < columns; j++)
             {
                 gameBoard[i][j] = 0;
-                demo += " 1";
+                demo += $"{gameBoard[i][j]} ";
             }
 
             //demo += 0;
             demo += "\n";
         }
         Debug.Log(demo);
+    }
 
+    public void PrintBoard()
+    {
+        string demo = String.Empty;
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                demo += $"{gameBoard[i][j]} ";
+            }
+
+            //demo += 0;
+            demo += "\n";
+        }
+        Debug.Log(demo);
+    }
+
+    public void SetTile(int row, int column, int playerNumber)
+    {
+        gameBoard[row][column] = playerNumber;
+    }
+
+    public int GetFirstAvaliableRow(int column)
+    {
+        if (column >= columns)
+        {
+            Debug.LogError("Column was out of index reach stuffs");
+            return -1;
+        }
+        for (int i = rows - 1; i >= 0; i--)
+        {
+            if (gameBoard[i][column] == 0)
+            {
+                Debug.Log("Went in");
+                gameBoard[i][column] = 1;
+                return i;
+            }
+        }
+        return -1;
     }
 }
