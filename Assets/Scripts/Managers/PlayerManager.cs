@@ -8,6 +8,7 @@ using UnityEngine;
 public class PlayerManager : NetworkBehaviour
 {
     public int PlayerID { get; set; }
+    public bool IsMyTurn { get; set; }
     
     private void Update()
     {
@@ -15,19 +16,6 @@ public class PlayerManager : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Return))
         {
             UIManager.Instance.ToggleChatBox();
-        }
-
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if (IsHost)
-            {
-                StartGameRpc();
-            }
-            else
-            {
-                Debug.LogError($"{SteamClient.Name} tried to start the game as non server!");
-            }
         }
     }
 

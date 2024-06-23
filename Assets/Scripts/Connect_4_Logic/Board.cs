@@ -74,8 +74,6 @@ public class Board
         {
             if (gameBoard[i][column] == 0)
             {
-                Debug.Log("Went in");
-                gameBoard[i][column] = 1;
                 return i;
             }
         }
