@@ -51,7 +51,7 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
     private MenuStates currentMenuState;
     private MenuStates previousMenuState;
     
-    public override void Awake()
+    protected override void Awake()
     {
         base.Awake();
         //uiCamera.gameObject.SetActive(false);

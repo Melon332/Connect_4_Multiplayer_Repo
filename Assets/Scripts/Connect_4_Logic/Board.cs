@@ -55,7 +55,7 @@ public class Board
             //demo += 0;
             demo += "\n";
         }
-        Debug.Log(demo);
+        Debug.LogError(demo);
     }
 
     public void SetTile(int row, int column, int playerNumber)

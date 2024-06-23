@@ -681,7 +681,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   columns: 7
   rows: 7
-  devMode: 0
+  devMode: 1
 --- !u!4 &1632713300
 Transform:
   m_ObjectHideFlags: 0

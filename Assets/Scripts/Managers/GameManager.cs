@@ -9,33 +9,52 @@ public class GameManager : MonoBehaviourSingletonPersistent<GameManager>
 {
     [SerializeField] private int columns, rows;
     [SerializeField] private bool devMode;
+
+    private List<PlayerManager> players = new List<PlayerManager>();
+    
     private GameUIManager gameUIManager;
-
-
     private Board currentPlayingBoard;
-    public override void Awake()
+    
+    protected override void Awake()
     {
         base.Awake();
         gameUIManager = FindObjectOfType<GameUIManager>();
     }
-
-    private void Start()
+    
+    private void StartGame()
     {
         currentPlayingBoard = new Board(columns, rows);
-    }
-    
-    public void StartGame()
-    {
         currentPlayingBoard.InitalizeBoard();
         Debug.LogError("Started game!");
+    }
+
+    public void AddPlayer(PlayerManager player)
+    {
+        players.Add(player);
+    }
+
+    private void SwitchTurns()
+    {
+        foreach (var player in players)
+        {
+            player.IsMyTurn = !player.IsMyTurn;
+        }
+    }
+
+    public void SetTile(int column, int playerIndex)
+    {
+        int row = currentPlayingBoard.GetFirstAvaliableRow(column);
+        currentPlayingBoard.SetTile(row, column, playerIndex);
+        Debug.Log("Added tile........... NEW BOARD");
+        TestPrintBoard();
+        SwitchTurns();
     }
     
     private void SceneManagerOnLoadEventCompleted(string scenename, LoadSceneMode loadscenemode, List<ulong> clientscompleted, List<ulong> clientstimedout)
     {
-        if (clientscompleted.Count >= 2 || devMode)
-        {
-            gameUIManager.ToggleWaitingForPlayersPanel(false);
-        }
+        if (clientscompleted.Count < 2 && !devMode) return;
+        StartGame();
+        gameUIManager.ToggleWaitingForPlayersPanel(false);
     }
 
     [ContextMenu("ColumnTesting")]
