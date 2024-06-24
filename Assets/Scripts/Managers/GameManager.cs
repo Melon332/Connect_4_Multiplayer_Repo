@@ -56,6 +56,12 @@ public class GameManager : MonoBehaviour
         currentPlayingBoard.SetTile(row, column, playerIndex);
         TestPrintBoard();
         SwitchTurns();
+        bool result = currentPlayingBoard.CheckForWin(playerIndex);
+        //Debug.LogError(result);
+        if (result)
+        {
+            Debug.Log($"Player {playerIndex} won!");
+        }
     }
     
     private void SceneManagerOnLoadEventCompleted(string scenename, LoadSceneMode loadscenemode, List<ulong> clientscompleted, List<ulong> clientstimedout)

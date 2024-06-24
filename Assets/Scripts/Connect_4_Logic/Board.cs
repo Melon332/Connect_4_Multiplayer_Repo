@@ -63,6 +63,50 @@ public class Board
         gameBoard[row][column] = playerNumber;
     }
 
+    public bool CheckForWin(int playerIndex)
+    {
+        // horizontalCheck 
+        for (int j = 0; j<rows-3 ; j++ )
+        {
+            for (int i = 0; i<columns; i++)
+            {
+                if (gameBoard[i][j] == playerIndex && gameBoard[i][j+1] == playerIndex && gameBoard[i][j+2] == playerIndex && gameBoard[i][j+3] == playerIndex)
+                {
+                    return true;
+                }           
+            }
+        }
+        // verticalCheck
+        for (int i = 0; i<columns-3 ; i++ )
+        {
+            for (int j = 0; j<rows; j++)
+            {
+                if (gameBoard[i][j] == playerIndex && gameBoard[i+1][j] == playerIndex && gameBoard[i+2][j] == playerIndex && gameBoard[i+3][j] == playerIndex){
+                    return true;
+                }           
+            }
+        }
+        // ascendingDiagonalCheck 
+        for (int i=3; i<columns; i++)
+        {
+            for (int j=0; j<rows-3; j++)
+            {
+                if (gameBoard[i][j] == playerIndex && gameBoard[i-1][j+1] == playerIndex && gameBoard[i-2][j+2] == playerIndex && gameBoard[i-3][j+3] == playerIndex)
+                    return true;
+            }
+        }
+        // descendingDiagonalCheck
+        for (int i=3; i<columns; i++)
+        {
+            for (int j=3; j<rows; j++)
+            {
+                if (gameBoard[i][j] == playerIndex && gameBoard[i-1][j-1] == playerIndex && gameBoard[i-2][j-2] == playerIndex && gameBoard[i-3][j-3] == playerIndex)
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public int GetFirstAvaliableRow(int column)
     {
         if (column >= columns)
