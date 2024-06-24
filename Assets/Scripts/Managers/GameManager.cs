@@ -1,12 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Steamworks;
+using Steamworks.Data;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviourSingletonPersistent<GameManager>
+public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; set; }
+    
     [SerializeField] private int columns, rows;
     [SerializeField] private bool devMode;
 
@@ -15,9 +19,9 @@ public class GameManager : MonoBehaviourSingletonPersistent<GameManager>
     private GameUIManager gameUIManager;
     private Board currentPlayingBoard;
     
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
+        Instance = this;
         gameUIManager = FindObjectOfType<GameUIManager>();
     }
     
@@ -35,6 +39,7 @@ public class GameManager : MonoBehaviourSingletonPersistent<GameManager>
 
     private void SwitchTurns()
     {
+        if (devMode) return;
         foreach (var player in players)
         {
             player.IsMyTurn = !player.IsMyTurn;
@@ -44,8 +49,11 @@ public class GameManager : MonoBehaviourSingletonPersistent<GameManager>
     public void SetTile(int column, int playerIndex)
     {
         int row = currentPlayingBoard.GetFirstAvaliableRow(column);
+        if (row == -1)
+        {
+            return;
+        }
         currentPlayingBoard.SetTile(row, column, playerIndex);
-        Debug.Log("Added tile........... NEW BOARD");
         TestPrintBoard();
         SwitchTurns();
     }
@@ -70,8 +78,37 @@ public class GameManager : MonoBehaviourSingletonPersistent<GameManager>
         currentPlayingBoard.PrintBoard();
     }
 
+    public void ReturnToMenu()
+    {
+        LobbySaver.CurrentLobby.Leave();
+        ShutdownConnection();
+        SceneLoaderManager.Instance.LoadScene("MainMenu");
+    }
+
+    public void PauseGame(bool toggle)
+    {
+       gameUIManager.TogglePauseMenu(toggle); 
+    }
+    
+    private void SteamMatchmakingOnLobbyMemberLeave(Lobby lobby, Friend friend)
+    {
+        ShutdownConnection();
+        SceneLoaderManager.Instance.LoadScene("MainMenu");
+    }
+
+    private void ShutdownConnection()
+    {
+        NetworkManager.Singleton.Shutdown();
+    }
+
     private void OnEnable()
     {
+        SteamMatchmaking.OnLobbyMemberLeave += SteamMatchmakingOnLobbyMemberLeave;
         NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += SceneManagerOnLoadEventCompleted;
+    }
+
+    private void OnDisable()
+    {
+        SteamMatchmaking.OnLobbyMemberLeave -= SteamMatchmakingOnLobbyMemberLeave;
     }
 }

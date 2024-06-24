@@ -20,8 +20,10 @@ public enum MessageType
     System
 }
 
-public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
+public class UIManager : MonoBehaviour
 {
+    public static UIManager Instance { get; set; }
+    
     [Header("Misc")]
     [SerializeField] private Camera uiCamera;
 
@@ -51,9 +53,9 @@ public class UIManager : MonoBehaviourSingletonPersistent<UIManager>
     private MenuStates currentMenuState;
     private MenuStates previousMenuState;
     
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
+        Instance = this;
         //uiCamera.gameObject.SetActive(false);
         
         //mainMenuPanel.SetActive(false);

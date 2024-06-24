@@ -10,6 +10,8 @@ public class PlayerManager : NetworkBehaviour
 {
     public int PlayerID { get; set; }
     public bool IsMyTurn { get; set; }
+    
+    public bool IsPaused { private get; set; }
 
     public override void OnNetworkSpawn()
     {
@@ -20,6 +22,7 @@ public class PlayerManager : NetworkBehaviour
             IsMyTurn = true;
         }
         NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += SceneManagerOnLoadEventCompleted;
+        IsPaused = false;
     }
 
     private void SceneManagerOnLoadEventCompleted(string scenename, LoadSceneMode loadscenemode, List<ulong> clientscompleted, List<ulong> clientstimedout)
@@ -48,6 +51,11 @@ public class PlayerManager : NetworkBehaviour
 
     private void ProcessInput()
     {
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            IsPaused = !IsPaused;
+            GameManager.Instance.PauseGame(IsPaused);
+        }
         if (!IsMyTurn) return;
         Action<int> action = IsHost == true ? ServerSetTileOnColumnRpc : ClientSetTileOnColumnRpc;
         if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -90,10 +98,5 @@ public class PlayerManager : NetworkBehaviour
     private void ServerSetTileOnColumnRpc(int column)
     {
         GameManager.Instance.SetTile(column, PlayerID + 1);
-    }
-
-    private void OnDisable()
-    {
-        
     }
 }
