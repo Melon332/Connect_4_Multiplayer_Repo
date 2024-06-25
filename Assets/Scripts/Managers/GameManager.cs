@@ -10,11 +10,16 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; set; }
-    
+
+    [SerializeField] private GameObject currentSelectedPlayBoard;
+    [SerializeField] private List<GameObject> bricks = new List<GameObject>();
+    [SerializeField] private float offsetY;
+    [SerializeField] private float test;
     [SerializeField] private int columns, rows;
     [SerializeField] private bool devMode;
 
     private List<PlayerManager> players = new List<PlayerManager>();
+    private VisualBoard visualBoard;
     
     private GameUIManager gameUIManager;
     private Board currentPlayingBoard;
@@ -29,6 +34,7 @@ public class GameManager : MonoBehaviour
     {
         currentPlayingBoard = new Board(columns, rows);
         currentPlayingBoard.InitalizeBoard();
+        visualBoard = Instantiate(currentSelectedPlayBoard, Vector3.zero, Quaternion.identity).GetComponent<VisualBoard>();
         Debug.LogError("Started game!");
     }
 
@@ -56,14 +62,52 @@ public class GameManager : MonoBehaviour
         currentPlayingBoard.SetTile(row, column, playerIndex);
         TestPrintBoard();
         SwitchTurns();
-        bool result = currentPlayingBoard.CheckForWin(playerIndex);
-        //Debug.LogError(result);
+        
+        SpawnTile(column, row, playerIndex);
+        GameResult(playerIndex);
+    }
+
+    private void SpawnTile(int column, int row, int playerIndex)
+    {
+        Transform col = visualBoard.GetColumnTransform(column);
+        GameObject tile = Instantiate(bricks[playerIndex - 1], col.transform.position, Quaternion.identity, col);
+        float offset = offsetY * row;
+        tile.transform.position = new Vector3(tile.transform.position.x, tile.transform.position.y - offset, tile.transform.position.z);
+    }
+
+    private void GameResult(int playerIndex)
+    {
+        //Game result checks here
+        bool tie = currentPlayingBoard.CheckIfBoardIsFull();
+        if (tie)
+        {
+            EndGame(true);
+            return;
+        }
+        
+        var result = CheckForWin(playerIndex);
         if (result)
         {
-            Debug.Log($"Player {playerIndex} won!");
+            EndGame(false, playerIndex);
         }
     }
-    
+
+    private void EndGame(bool tie, int playerIndex = 0)
+    {
+        if (tie)
+        {
+            //TODO: Add tie logic here
+            Debug.Log("Game tied!");
+            return;
+        }
+        //TODO: Add end game logic here
+    }
+
+    private bool CheckForWin(int playerIndex)
+    {
+        return currentPlayingBoard.CheckForWin(playerIndex);
+    }
+
     private void SceneManagerOnLoadEventCompleted(string scenename, LoadSceneMode loadscenemode, List<ulong> clientscompleted, List<ulong> clientstimedout)
     {
         if (clientscompleted.Count < 2 && !devMode) return;

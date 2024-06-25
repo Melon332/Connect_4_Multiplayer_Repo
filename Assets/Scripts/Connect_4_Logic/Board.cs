@@ -9,6 +9,8 @@ public class Board
 
     private int rows, columns;
 
+    private int rowsAndColumnsCombined;
+
     public Board(int cols, int rows)
     {
         gameBoard = new List<int[]>();
@@ -18,10 +20,9 @@ public class Board
             gameBoard.Add(temp);
         }
         
-        Debug.Log(gameBoard.Count);
-
         columns = cols;
         this.rows = rows;
+        rowsAndColumnsCombined = this.rows * columns;
     }
 
     public void InitalizeBoard()
@@ -61,6 +62,25 @@ public class Board
     public void SetTile(int row, int column, int playerNumber)
     {
         gameBoard[row][column] = playerNumber;
+    }
+
+    public bool CheckIfBoardIsFull()
+    {
+        int filledGrid = 0;
+        for (int i = 0; i < rows; i++)
+        {
+            //Debug.Log(i);
+            for (int j = 0; j < columns; j++)
+            {
+                //Check if the grid position is taken
+                if (gameBoard[i][j] != 0)
+                {
+                    filledGrid += 1;
+                }
+            }
+        }
+
+        return filledGrid >= rowsAndColumnsCombined;
     }
 
     public bool CheckForWin(int playerIndex)
