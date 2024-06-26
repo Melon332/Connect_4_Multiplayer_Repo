@@ -86,8 +86,9 @@ public class PlayerManager : NetworkBehaviour
         {
             action.Invoke(6);
         }
+        
     }
-
+    
     [Rpc(SendTo.Server)]
     private void ClientSetTileOnColumnRpc(int column)
     {

@@ -27,6 +27,8 @@ public class GameManager : NetworkBehaviour
     private GameUIManager gameUIManager;
     private Board currentPlayingBoard;
     private VisualBoard visualBoard;
+
+    private int winnerID;
     
     private void Awake()
     {
@@ -51,15 +53,14 @@ public class GameManager : NetworkBehaviour
     {
         if (devMode)
         {
-            gameUIManager.ShowTurnText(secondsToShowTurnText);
             return;
         }
         foreach (var player in players)
         {
             player.IsMyTurn = !player.IsMyTurn;
-            if (player.IsMyTurn)
+            if (player.IsMyTurn && player.IsOwner)
             {
-                gameUIManager.ShowTurnText(secondsToShowTurnText);
+                ShowTurnText();
             }
         }
     }
@@ -111,10 +112,10 @@ public class GameManager : NetworkBehaviour
         if (tie)
         {
             //TODO: Add tie logic here
-            Debug.Log("Game tied!");
             return;
         }
         GiveWinnerFirstTurn(playerIndex - 1);
+        winnerID = playerIndex - 1;
         //TODO: Add end game logic here
     }
 
@@ -122,6 +123,10 @@ public class GameManager : NetworkBehaviour
     {
         gameUIManager.ToggleEndGamePanel(false);
         gameUIManager.ToggleHUDPanel(true);
+        if (players[winnerID].IsOwner)
+        {
+            gameUIManager.ShowTurnText(secondsToShowTurnText);
+        }
     }
 
     private bool CheckForWin(int playerIndex)
@@ -135,6 +140,11 @@ public class GameManager : NetworkBehaviour
         StartGame();
         gameUIManager.ToggleWaitingForPlayersPanel(false);
         gameUIManager.ToggleHUDPanel(true);
+    }
+
+    public void ShowTurnText()
+    {
+        gameUIManager.ShowTurnText(secondsToShowTurnText);
     }
 
     [Rpc(SendTo.Everyone)]
