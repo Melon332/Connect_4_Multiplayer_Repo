@@ -127,6 +127,17 @@ public class Board
         return false;
     }
 
+    public void ResetBoard()
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                gameBoard[i][j] = 0;
+            }
+        }
+    }
+
     public int GetFirstAvaliableRow(int column)
     {
         if (column >= columns)

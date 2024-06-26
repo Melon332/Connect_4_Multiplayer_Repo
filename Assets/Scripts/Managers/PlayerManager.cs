@@ -56,7 +56,7 @@ public class PlayerManager : NetworkBehaviour
             IsPaused = !IsPaused;
             GameManager.Instance.PauseGame(IsPaused);
         }
-        if (!IsMyTurn) return;
+        if (!IsMyTurn || IsPaused) return;
         Action<int> action = IsHost == true ? ServerSetTileOnColumnRpc : ClientSetTileOnColumnRpc;
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {

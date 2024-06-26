@@ -7,22 +7,26 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance { get; set; }
 
+    [Header("Board and tile data variables")]
     [SerializeField] private GameObject currentSelectedPlayBoard;
     [SerializeField] private List<GameObject> bricks = new List<GameObject>();
     [SerializeField] private float offsetY;
-    [SerializeField] private float test;
     [SerializeField] private int columns, rows;
     [SerializeField] private bool devMode;
 
+    [Header("UI timing variables")] 
+    [SerializeField] private float secondsToShowTurnText = 2.0f;
+
     private List<PlayerManager> players = new List<PlayerManager>();
-    private VisualBoard visualBoard;
+    private List<GameObject> spawnedTiles = new List<GameObject>();
     
     private GameUIManager gameUIManager;
     private Board currentPlayingBoard;
+    private VisualBoard visualBoard;
     
     private void Awake()
     {
@@ -45,10 +49,18 @@ public class GameManager : MonoBehaviour
 
     private void SwitchTurns()
     {
-        if (devMode) return;
+        if (devMode)
+        {
+            gameUIManager.ShowTurnText(secondsToShowTurnText);
+            return;
+        }
         foreach (var player in players)
         {
             player.IsMyTurn = !player.IsMyTurn;
+            if (player.IsMyTurn)
+            {
+                gameUIManager.ShowTurnText(secondsToShowTurnText);
+            }
         }
     }
 
@@ -60,7 +72,6 @@ public class GameManager : MonoBehaviour
             return;
         }
         currentPlayingBoard.SetTile(row, column, playerIndex);
-        TestPrintBoard();
         SwitchTurns();
         
         SpawnTile(column, row, playerIndex);
@@ -73,6 +84,7 @@ public class GameManager : MonoBehaviour
         GameObject tile = Instantiate(bricks[playerIndex - 1], col.transform.position, Quaternion.identity, col);
         float offset = offsetY * row;
         tile.transform.position = new Vector3(tile.transform.position.x, tile.transform.position.y - offset, tile.transform.position.z);
+        spawnedTiles.Add(tile);
     }
 
     private void GameResult(int playerIndex)
@@ -92,15 +104,24 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void EndGame(bool tie, int playerIndex = 0)
+    private void EndGame(bool tie, int playerIndex = -1)
     {
+        gameUIManager.ToggleEndGamePanel(true);
+        gameUIManager.ToggleHUDPanel(false);
         if (tie)
         {
             //TODO: Add tie logic here
             Debug.Log("Game tied!");
             return;
         }
+        GiveWinnerFirstTurn(playerIndex - 1);
         //TODO: Add end game logic here
+    }
+
+    private void InitalizeUI()
+    {
+        gameUIManager.ToggleEndGamePanel(false);
+        gameUIManager.ToggleHUDPanel(true);
     }
 
     private bool CheckForWin(int playerIndex)
@@ -113,6 +134,40 @@ public class GameManager : MonoBehaviour
         if (clientscompleted.Count < 2 && !devMode) return;
         StartGame();
         gameUIManager.ToggleWaitingForPlayersPanel(false);
+        gameUIManager.ToggleHUDPanel(true);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void ResetBoardRpc()
+    {
+        currentPlayingBoard.ResetBoard();
+        ResetAllTiles();
+        InitalizeUI();
+        Debug.Log("Game restarted!");
+    }
+
+    private void GiveWinnerFirstTurn(int winnerPlayerIndex)
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].PlayerID == winnerPlayerIndex)
+            {
+                players[i].IsMyTurn = true;
+            }
+            else
+            {
+                players[i].IsMyTurn = false;
+            }
+        }
+    }
+
+    public void ResetAllTiles()
+    {
+        foreach (var tiles in spawnedTiles)
+        {
+            Destroy(tiles);
+        }
+        spawnedTiles.Clear();
     }
 
     [ContextMenu("ColumnTesting")]
