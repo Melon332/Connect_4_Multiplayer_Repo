@@ -1,11 +1,14 @@
 using Steamworks;
 using TMPro;
 using Unity.Netcode;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
+using Button = UnityEngine.UI.Button;
 
 public enum MenuStates {
     Setup,
@@ -47,6 +50,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_InputField messageField;
     [SerializeField] private TextMeshProUGUI messageTemplate;
     [SerializeField] private GameObject messageContainer;
+    [SerializeField] private ScrollRect messageScrollView;
     
     
 
@@ -136,6 +140,13 @@ public class UIManager : MonoBehaviour
         //Instaniate a new lobby message
         TextMeshProUGUI temp = Instantiate(messageTemplate.gameObject, messageContainer.transform).GetComponent<TextMeshProUGUI>();
         temp.text = $"{sender}: {message}";
+        ScrollToBottomOfScroll();
+    }
+
+    private void ScrollToBottomOfScroll()
+    {
+        messageScrollView.verticalNormalizedPosition = 0;
+        LayoutRebuilder.ForceRebuildLayoutImmediate( (RectTransform)messageScrollView.transform );
     }
     
     public void SystemMessage(string message, string sender = null)
@@ -143,6 +154,7 @@ public class UIManager : MonoBehaviour
         //Instaniate a new lobby message
         TextMeshProUGUI temp = Instantiate(messageTemplate.gameObject, messageContainer.transform).GetComponent<TextMeshProUGUI>();
         temp.text = $"{sender} {message}";
+        ScrollToBottomOfScroll();
     }
 
     public void DelegateMessage(MessageType messageType, string message, string sender)
@@ -155,9 +167,9 @@ public class UIManager : MonoBehaviour
             case MessageType.System:
                 SystemMessage(message, sender);
                 break;
-            default:
-                break;
         }
+        messageScrollView.verticalNormalizedPosition = 0;
+        Canvas.ForceUpdateCanvases();
     }
 
     public void ToggleStartGameButton(bool isHost)
@@ -167,6 +179,9 @@ public class UIManager : MonoBehaviour
 
     public void QuitGame()
     {
+    #if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+    #endif
         Application.Quit();
     }
 
@@ -175,6 +190,7 @@ public class UIManager : MonoBehaviour
         SteamFriends.OpenGameInviteOverlay(LobbySaver.CurrentLobby.Id);
     }
 
+    /*
     public void SetHostLobbyButtonMethod(UnityAction method)
     {
         hostLobbyButton.onClick.AddListener(method);
@@ -196,6 +212,7 @@ public class UIManager : MonoBehaviour
     {
         startGameButton.onClick.AddListener(method);
     }
+    */
 
 
     public void SetMenuState(MenuStates state)

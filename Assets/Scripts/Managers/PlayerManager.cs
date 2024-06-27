@@ -51,7 +51,7 @@ public class PlayerManager : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            GameManager.Instance.TestPrintBoard();
+            GameManager.Instance?.TestPrintBoard();
         }
         
         ProcessInput();

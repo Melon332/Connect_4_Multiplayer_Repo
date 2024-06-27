@@ -209,7 +209,21 @@ public class GameManager : NetworkBehaviour
 
     public void PauseGame(bool toggle)
     {
-       gameUIManager.TogglePauseMenu(toggle); 
+       gameUIManager.TogglePauseMenu(toggle);
+       GetOwningPlayer().IsPaused = toggle;
+    }
+
+    private PlayerManager GetOwningPlayer()
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].IsOwner)
+            {
+                return players[i];
+            }
+        }
+
+        return null;
     }
     
     private void SteamMatchmakingOnLobbyMemberLeave(Lobby lobby, Friend friend)
