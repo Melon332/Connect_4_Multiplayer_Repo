@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Steamworks;
 using Unity.Netcode;
 using UnityEngine;
@@ -8,10 +9,14 @@ using UnityEngine.SceneManagement;
 
 public class PlayerManager : NetworkBehaviour
 {
-    public int PlayerID { get; set; }
+    public int PlayerID { get; private set; }
     public bool IsMyTurn { get; set; }
     
+    public string PlayerName { get; set; }
+    
     public bool IsPaused { private get; set; }
+    
+    public int Wins { get; set; }
 
     public override void OnNetworkSpawn()
     {
@@ -23,6 +28,7 @@ public class PlayerManager : NetworkBehaviour
         }
         NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += SceneManagerOnLoadEventCompleted;
         IsPaused = false;
+
     }
 
     private void SceneManagerOnLoadEventCompleted(string scenename, LoadSceneMode loadscenemode, List<ulong> clientscompleted, List<ulong> clientstimedout)
@@ -30,6 +36,8 @@ public class PlayerManager : NetworkBehaviour
         if (scenename == "Gameplay")
         {
             GameManager.Instance.AddPlayer(this);
+            PlayerName = LobbySaver.CurrentLobby.Members.ToList()[PlayerID].Name;
+            Debug.Log(PlayerName);
         }
     }
 

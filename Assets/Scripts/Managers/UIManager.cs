@@ -56,11 +56,7 @@ public class UIManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        //uiCamera.gameObject.SetActive(false);
-        
-        //mainMenuPanel.SetActive(false);
         inLobbyPanel.SetActive(false);
-        //setupPanel.SetActive(true);
 
         CheckCurrentLoadedScene();
     }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Steamworks;
 using Steamworks.Data;
 using Unity.Netcode;
@@ -41,6 +42,7 @@ public class GameManager : NetworkBehaviour
         currentPlayingBoard = new Board(columns, rows);
         currentPlayingBoard.InitalizeBoard();
         visualBoard = Instantiate(currentSelectedPlayBoard, Vector3.zero, Quaternion.identity).GetComponent<VisualBoard>();
+        gameUIManager.InitalizePlayerScoreText(players);
         Debug.LogError("Started game!");
     }
 
@@ -114,8 +116,12 @@ public class GameManager : NetworkBehaviour
             //TODO: Add tie logic here
             return;
         }
-        GiveWinnerFirstTurn(playerIndex - 1);
-        winnerID = playerIndex - 1;
+
+        int playerIndexZeroed = playerIndex - 1;
+        gameUIManager.SetWinnerText(players[playerIndexZeroed]);
+        GiveWinnerFirstTurn(playerIndexZeroed);
+        winnerID = playerIndexZeroed;
+        players[winnerID].Wins += 1;
         //TODO: Add end game logic here
     }
 
@@ -123,6 +129,7 @@ public class GameManager : NetworkBehaviour
     {
         gameUIManager.ToggleEndGamePanel(false);
         gameUIManager.ToggleHUDPanel(true);
+        gameUIManager.UpdatePlayerScoreText(players);
         if (players[winnerID].IsOwner)
         {
             gameUIManager.ShowTurnText(secondsToShowTurnText);
