@@ -14,7 +14,7 @@ public class PlayerManager : NetworkBehaviour
     
     public string PlayerName { get; set; }
     
-    public bool IsPaused { private get; set; }
+    public bool IsPaused { get; set; }
     
     public int Wins { get; set; }
 
@@ -61,11 +61,10 @@ public class PlayerManager : NetworkBehaviour
     {
         if (Input.GetKeyDown(KeyCode.P))
         {
-            IsPaused = !IsPaused;
-            GameManager.Instance.PauseGame(IsPaused);
+            GameManager.Instance.PauseGame(!IsPaused);
         }
         if (!IsMyTurn || IsPaused) return;
-        Action<int> action = IsHost == true ? ServerSetTileOnColumnRpc : ClientSetTileOnColumnRpc;
+        Action<int> action = IsHost ? ServerSetTileOnColumnRpc : ClientSetTileOnColumnRpc;
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             action.Invoke(0);

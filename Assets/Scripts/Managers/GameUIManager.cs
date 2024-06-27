@@ -25,6 +25,8 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private string winsTextString;
     [SerializeField] private string winnerTextString;
 
+    private Coroutine showTextCoroutine;
+
     private void Awake()
     {
         pauseMenuPanel.SetActive(false);
@@ -73,6 +75,7 @@ public class GameUIManager : MonoBehaviour
     public void TogglePauseMenu(bool toggle)
     {
         pauseMenuPanel.SetActive(toggle);
+        hudPanel.SetActive(!toggle);
     }
 
     public void ToggleHUDPanel(bool toggle)
@@ -88,7 +91,11 @@ public class GameUIManager : MonoBehaviour
 
     public void ShowTurnText(float seconds)
     {
-        StartCoroutine(ShowTurnTextCoroutine(seconds));
+        if (showTextCoroutine != null)
+        {
+            StopCoroutine(showTextCoroutine);
+        }
+        showTextCoroutine = StartCoroutine(ShowTurnTextCoroutine(seconds));
     }
 
     private IEnumerator ShowTurnTextCoroutine(float seconds)
