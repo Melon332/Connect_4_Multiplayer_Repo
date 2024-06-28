@@ -30,13 +30,34 @@ public class GameManager : NetworkBehaviour
     private VisualBoard visualBoard;
 
     private int winnerID;
+    private GameObject tileToLerp;
+    private float yPos;
+    private float time;
     
     private void Awake()
     {
         Instance = this;
         gameUIManager = FindObjectOfType<GameUIManager>();
     }
-    
+
+    private void FixedUpdate()
+    {
+        if (tileToLerp == null) return;
+        LerpTile();
+    }
+
+    private void LerpTile()
+    {
+        time += Time.deltaTime;
+        float lerpPos = Mathf.Lerp(tileToLerp.transform.position.y, yPos, time);
+        tileToLerp.transform.position = new Vector3(tileToLerp.transform.position.x, lerpPos, tileToLerp.transform.position.z);
+        if (time > 1)
+        {
+            tileToLerp = null;
+            time = 0;
+        }
+    }
+
     private void StartGame()
     {
         currentPlayingBoard = new Board(columns, rows);
@@ -86,8 +107,10 @@ public class GameManager : NetworkBehaviour
         Transform col = visualBoard.GetColumnTransform(column);
         GameObject tile = Instantiate(bricks[playerIndex - 1], col.transform.position, Quaternion.identity, col);
         float offset = offsetY * row;
-        tile.transform.position = new Vector3(tile.transform.position.x, tile.transform.position.y - offset, tile.transform.position.z);
+        //tile.transform.position = new Vector3(tile.transform.position.x, tile.transform.position.y - offset, tile.transform.position.z);
         spawnedTiles.Add(tile);
+        tileToLerp = tile;
+        yPos = tile.transform.position.y - offset;
     }
 
     private void GameResult(int playerIndex)

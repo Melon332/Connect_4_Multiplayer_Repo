@@ -73,5 +73,5 @@ MonoBehaviour:
   offsetY: 0.3
   columns: 7
   rows: 7
-  devMode: 1
+  devMode: 0
   secondsToShowTurnText: 2
