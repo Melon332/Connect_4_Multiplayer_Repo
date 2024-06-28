@@ -10,6 +10,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour
 {
+    public bool IsDroppingTile { get; set; }
     public static GameManager Instance { get; set; }
 
     [Header("Board and tile data variables")]
@@ -18,6 +19,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private float offsetY;
     [SerializeField] private int columns, rows;
     [SerializeField] private bool devMode;
+    [SerializeField] private float tileMoveSpeed;
 
     [Header("UI timing variables")] 
     [SerializeField] private float secondsToShowTurnText = 2.0f;
@@ -32,7 +34,7 @@ public class GameManager : NetworkBehaviour
     private int winnerID;
     private GameObject tileToLerp;
     private float yPos;
-    private float time;
+    private float sinTime;
     
     private void Awake()
     {
@@ -48,14 +50,27 @@ public class GameManager : NetworkBehaviour
 
     private void LerpTile()
     {
-        time += Time.deltaTime;
-        float lerpPos = Mathf.Lerp(tileToLerp.transform.position.y, yPos, time);
-        tileToLerp.transform.position = new Vector3(tileToLerp.transform.position.x, lerpPos, tileToLerp.transform.position.z);
-        if (time > 1)
+        if (!Mathf.Approximately(tileToLerp.transform.position.y,yPos))
         {
-            tileToLerp = null;
-            time = 0;
+            sinTime += Time.deltaTime * tileMoveSpeed;
+            sinTime = Mathf.Clamp(sinTime, 0, Mathf.PI);
+            float t = Evaluate(sinTime);
+            float lerpPos = Mathf.Lerp(tileToLerp.transform.position.y, yPos, t);
+            tileToLerp.transform.position =
+                new Vector3(tileToLerp.transform.position.x, lerpPos, tileToLerp.transform.position.z);
+            IsDroppingTile = true;
         }
+        else
+        {
+            IsDroppingTile = false;
+            tileToLerp = null;
+            sinTime = 0;
+        }
+    }
+
+    private float Evaluate(float x)
+    {
+        return 0.5f * Mathf.Sin(x - Mathf.PI / 2) + 0.5f;
     }
 
     private void StartGame()
@@ -107,7 +122,7 @@ public class GameManager : NetworkBehaviour
         Transform col = visualBoard.GetColumnTransform(column);
         GameObject tile = Instantiate(bricks[playerIndex - 1], col.transform.position, Quaternion.identity, col);
         float offset = offsetY * row;
-        //tile.transform.position = new Vector3(tile.transform.position.x, tile.transform.position.y - offset, tile.transform.position.z);
+
         spawnedTiles.Add(tile);
         tileToLerp = tile;
         yPos = tile.transform.position.y - offset;
@@ -183,6 +198,8 @@ public class GameManager : NetworkBehaviour
         currentPlayingBoard.ResetBoard();
         ResetAllTiles();
         InitalizeUI();
+        sinTime = 0;
+        IsDroppingTile = false;
         Debug.Log("Game restarted!");
     }
 

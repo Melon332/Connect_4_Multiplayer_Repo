@@ -18,6 +18,8 @@ public class PlayerManager : NetworkBehaviour
     
     public int Wins { get; set; }
 
+    private bool inGame = false;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -37,7 +39,7 @@ public class PlayerManager : NetworkBehaviour
         {
             GameManager.Instance.AddPlayer(this);
             PlayerName = LobbySaver.CurrentLobby.Members.ToList()[PlayerID].Name;
-            Debug.Log(PlayerName);
+            inGame = true;
         }
     }
 
@@ -59,11 +61,12 @@ public class PlayerManager : NetworkBehaviour
 
     private void ProcessInput()
     {
+        if (!inGame) return;
         if (Input.GetKeyDown(KeyCode.P))
         {
             GameManager.Instance.PauseGame(!IsPaused);
         }
-        if (!IsMyTurn || IsPaused) return;
+        if (!IsMyTurn || IsPaused || GameManager.Instance.IsDroppingTile) return;
         Action<int> action = IsHost ? ServerSetTileOnColumnRpc : ClientSetTileOnColumnRpc;
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
