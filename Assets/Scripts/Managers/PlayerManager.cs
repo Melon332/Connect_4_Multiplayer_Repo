@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 
 public class PlayerManager : NetworkBehaviour
 {
+    public Camera cameraMain { private get; set; }
     public int PlayerID { get; private set; }
     public bool IsMyTurn { get; set; }
     
@@ -20,6 +21,10 @@ public class PlayerManager : NetworkBehaviour
 
     private bool inGame = false;
 
+    private RowNumber currentHoveringRow;
+
+    private Action<int> SetTileAction;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -30,7 +35,7 @@ public class PlayerManager : NetworkBehaviour
         }
         NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += SceneManagerOnLoadEventCompleted;
         IsPaused = false;
-
+        SetTileAction += IsHost ? ServerSetTileOnColumnRpc : ClientSetTileOnColumnRpc;
     }
 
     private void SceneManagerOnLoadEventCompleted(string scenename, LoadSceneMode loadscenemode, List<ulong> clientscompleted, List<ulong> clientstimedout)
@@ -40,6 +45,7 @@ public class PlayerManager : NetworkBehaviour
             GameManager.Instance.AddPlayer(this);
             PlayerName = LobbySaver.CurrentLobby.Members.ToList()[PlayerID].Name;
             inGame = true;
+            cameraMain = FindObjectOfType<Camera>();
         }
     }
 
@@ -66,37 +72,68 @@ public class PlayerManager : NetworkBehaviour
         {
             GameManager.Instance.PauseGame(!IsPaused);
         }
+        HoveringOverRow();
         if (!IsMyTurn || IsPaused || GameManager.Instance.IsDroppingTile) return;
-        Action<int> action = IsHost ? ServerSetTileOnColumnRpc : ClientSetTileOnColumnRpc;
+        MouseClick();
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            action.Invoke(0);
+            SetTileAction.Invoke(0);
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            action.Invoke(1);
+            SetTileAction.Invoke(1);
         }
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            action.Invoke(2);
+            SetTileAction.Invoke(2);
         }
         if (Input.GetKeyDown(KeyCode.Alpha4))
         {
-            action.Invoke(3);
+            SetTileAction.Invoke(3);
         }
         if (Input.GetKeyDown(KeyCode.Alpha5))
         {
-            action.Invoke(4);
+            SetTileAction.Invoke(4);
         }
         if (Input.GetKeyDown(KeyCode.Alpha6))
         {
-            action.Invoke(5);
+            SetTileAction.Invoke(5);
         }
         if (Input.GetKeyDown(KeyCode.Alpha7))
         {
-            action.Invoke(6);
+            SetTileAction.Invoke(6);
         }
-        
+    }
+
+    private void HoveringOverRow()
+    {
+        Ray ray = cameraMain.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            RowNumber hoveringRow = hit.collider.GetComponent<RowNumber>();
+            if (hoveringRow)
+            {
+                currentHoveringRow = hoveringRow;
+                GameManager.Instance.SetPhantomTilePosition(PlayerID, hoveringRow.transform);
+            }
+        }
+        else
+        {
+            currentHoveringRow = null;
+            GameManager.Instance.TogglePhantomTile(PlayerID, false);
+        }
+    }
+
+    private void MouseClick()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (currentHoveringRow)
+            {
+                SetTileAction?.Invoke(currentHoveringRow.number);
+            }
+        }
     }
     
     [Rpc(SendTo.Server)]

@@ -20,6 +20,8 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private int columns, rows;
     [SerializeField] private bool devMode;
     [SerializeField] private float tileMoveSpeed;
+    [SerializeField] private List<GameObject> phantomTiles;
+    [SerializeField] private float yPosPhantomOffset = 0.3f;
 
     [Header("UI timing variables")] 
     [SerializeField] private float secondsToShowTurnText = 2.0f;
@@ -126,6 +128,21 @@ public class GameManager : NetworkBehaviour
         spawnedTiles.Add(tile);
         tileToLerp = tile;
         yPos = tile.transform.position.y - offset;
+    }
+
+    public void SetPhantomTilePosition(int playerIndex, Transform rowObject)
+    {
+        GameObject tile = phantomTiles[playerIndex];
+        TogglePhantomTile(playerIndex, true);
+        tile.transform.position = new Vector3(rowObject.transform.position.x,
+            rowObject.transform.position.y + yPosPhantomOffset, rowObject.transform.position.z);
+    }
+
+    public void TogglePhantomTile(int playerIndex, bool toggle)
+    {
+        GameObject tile = phantomTiles[playerIndex];
+        if (tile.activeInHierarchy == toggle) return;
+        tile.SetActive(toggle);
     }
 
     private void GameResult(int playerIndex)
