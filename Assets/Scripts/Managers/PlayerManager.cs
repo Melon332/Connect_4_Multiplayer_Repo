@@ -25,6 +25,7 @@ public class PlayerManager : NetworkBehaviour
 
     private Action<int> SetTileAction;
 
+    private CharacterContainer ownedCharacterContainer;
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -36,6 +37,19 @@ public class PlayerManager : NetworkBehaviour
         NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += SceneManagerOnLoadEventCompleted;
         IsPaused = false;
         SetTileAction += IsHost ? ServerSetTileOnColumnRpc : ClientSetTileOnColumnRpc;
+        ownedCharacterContainer = CharacterCustomizationManager.Instance.GetCharacterContainer();
+        if (!NetworkManager.Singleton.IsHost && IsOwner)
+        {
+            ClientJoinedRpc();
+            SendCustomizationDataToServerRpc(ownedCharacterContainer.currentTorso,
+                ownedCharacterContainer.currentHead, ownedCharacterContainer.currentEars, ownedCharacterContainer.currentEyes);
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        NetworkManager.Singleton.SceneManager.OnLoadEventCompleted -= SceneManagerOnLoadEventCompleted;
     }
 
     private void SceneManagerOnLoadEventCompleted(string scenename, LoadSceneMode loadscenemode, List<ulong> clientscompleted, List<ulong> clientstimedout)
@@ -103,6 +117,31 @@ public class PlayerManager : NetworkBehaviour
         {
             SetTileAction.Invoke(6);
         }
+    }
+
+    [Rpc(SendTo.Server)]
+    private void ClientJoinedRpc()
+    {
+        UIManager.Instance.ToggleStartGameButton();
+    }
+
+    [Rpc(SendTo.Server)]
+    private void SendCustomizationDataToServerRpc(int torso, int head, int ears, int eyes)
+    {
+        CharacterCustomizationManager.Instance.AddNewCustomization(torso, head, ears, eyes);
+        SendCustomizationDataToClientsRpc(ownedCharacterContainer.currentTorso,
+            ownedCharacterContainer.currentHead,
+            ownedCharacterContainer.currentEars,
+            ownedCharacterContainer.currentEyes);
+    }
+
+    [Rpc(SendTo.NotServer)]
+    private void SendCustomizationDataToClientsRpc(int torso, int head, int ears, int eyes)
+    {
+        CharacterCustomizationManager.Instance.AddNewCustomization(torso,
+            head,
+            ears,
+            eyes);
     }
 
     private void HoveringOverRow()

@@ -1,3 +1,4 @@
+using System;
 using Steamworks;
 using TMPro;
 using Unity.Netcode;
@@ -7,7 +8,6 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
 using Button = UnityEngine.UI.Button;
 
 public enum MenuStates {
@@ -23,17 +23,15 @@ public enum MessageType
     System
 }
 
-public class UIManager : MonoBehaviour
+public class UIManager : MonoBehaviourSingleton<UIManager>
 {
-    public static UIManager Instance { get; set; }
-    
     [Header("Misc")]
     [SerializeField] private Camera uiCamera;
 
     [Header("Main Panels")] 
     [SerializeField] private GameObject mainMenuPanel;
-    //[SerializeField] private GameObject setupPanel;
     [SerializeField] private GameObject inLobbyPanel;
+    [SerializeField] private GameObject characterCustomizationPanel;
     
     [Header("Buttons")] 
     [SerializeField] private Button hostLobbyButton;
@@ -45,24 +43,75 @@ public class UIManager : MonoBehaviour
     [Header("InputFields and Texts")]
     [SerializeField] private TMP_InputField lobbyIDInputField;
     [SerializeField] private TextMeshProUGUI lobbyIDDisplay;
+    [SerializeField] private TextMeshProUGUI waitingForPlayersText;
 
     [Header("Message System Variables")] 
     [SerializeField] private TMP_InputField messageField;
     [SerializeField] private TextMeshProUGUI messageTemplate;
     [SerializeField] private GameObject messageContainer;
     [SerializeField] private ScrollRect messageScrollView;
-    
-    
+
+    [Space] [Header("Customization Variables")] 
+    [SerializeField] private Button increaseTorsoButton;
+    [SerializeField] private Button decreaseTorsoButton;
+    [SerializeField] private TextMeshProUGUI torsoCounter;
+    [Space]
+    [SerializeField] private Button increaseHeadButton;
+    [SerializeField] private Button decreaseHeadButton;
+    [SerializeField] private TextMeshProUGUI headCounter;
+    [Space]
+    [SerializeField] private Button increaseEyesButton;
+    [SerializeField] private Button decreaseEyesButton;
+    [SerializeField] private TextMeshProUGUI eyesCounter;
+    [Space]
+    [SerializeField] private Button increaseEarsButton;
+    [SerializeField] private Button decreaseEarsButton;
+    [SerializeField] private TextMeshProUGUI earsCounter;
+    [Space] 
+    [SerializeField] private Button backCustomizationButton;
 
     private MenuStates currentMenuState;
     private MenuStates previousMenuState;
     
     private void Awake()
     {
-        Instance = this;
         inLobbyPanel.SetActive(false);
+        characterCustomizationPanel.SetActive(false);
 
         CheckCurrentLoadedScene();
+        
+        InitalizeTorsoButtons(CharacterCustomizationManager.Instance.ModifyTorso);
+        InitalizeHeadButtons(CharacterCustomizationManager.Instance.ModifyHead);
+        InitalizeEyesButtons(CharacterCustomizationManager.Instance.ModifyEyes);
+        InitalizeEarsButtons(CharacterCustomizationManager.Instance.ModifyEars);
+        InitalizeBackButton(CharacterCustomizationManager.Instance.SaveBody);
+    }
+
+    private void InitalizeTorsoButtons(Action<bool> method)
+    {
+        increaseTorsoButton.onClick.AddListener(() => method(true));
+        decreaseTorsoButton.onClick.AddListener(() => method(false));
+    }
+    private void InitalizeHeadButtons(Action<bool> method)
+    {
+        increaseHeadButton.onClick.AddListener(() => method(true));
+        decreaseHeadButton.onClick.AddListener(() => method(false));
+    }
+    private void InitalizeEyesButtons(Action<bool> method)
+    {
+        increaseEyesButton.onClick.AddListener(() => method(true));
+        decreaseEyesButton.onClick.AddListener(() => method(false));
+    }
+    private void InitalizeEarsButtons(Action<bool> method)
+    {
+        increaseEarsButton.onClick.AddListener(() => method(true));
+        decreaseEarsButton.onClick.AddListener(() => method(false));
+    }
+
+    private void InitalizeBackButton(UnityAction method)
+    {
+        backCustomizationButton.onClick.AddListener(method);
+        
     }
 
     private void CheckCurrentLoadedScene()
@@ -75,6 +124,25 @@ public class UIManager : MonoBehaviour
                 break;
             case "Gameplay":
                 SetMenuState(MenuStates.Game);
+                break;
+        }
+    }
+
+    public void SetBodyPartIndexText(EBodyType bodyType, int index)
+    {
+        switch (bodyType)
+        {
+            case EBodyType.Torso:
+                torsoCounter.text = index.ToString();
+                break;
+            case EBodyType.Head:
+                headCounter.text = index.ToString();
+                break;
+            case EBodyType.Eyes:
+                eyesCounter.text = index.ToString();
+                break;
+            case EBodyType.Ears:
+                earsCounter.text = index.ToString();
                 break;
         }
     }
@@ -103,6 +171,28 @@ public class UIManager : MonoBehaviour
         textEditor.Copy();
     }
     
+    public void ToggleStartGameButton()
+    {
+        ToggleStartGameButton(true);
+        ToggleWaitingForPlayerText(false);
+        Debug.Log("am I being called?");
+    }
+
+    public void ToggleCharacterCustomizationPanel(bool toggle)
+    {
+        characterCustomizationPanel.SetActive(toggle);
+    }
+
+    public void ToggleMainMenuPanel(bool toggle)
+    {
+        mainMenuPanel.SetActive(toggle);
+    }
+
+    public void ToggleWaitingForPlayerText(bool toggle)
+    {
+        waitingForPlayersText.gameObject.SetActive(toggle);
+    }
+    
     public string GetLobbyIDText()
     {
         return lobbyIDInputField.text;
@@ -121,6 +211,11 @@ public class UIManager : MonoBehaviour
         {
             if (!string.IsNullOrEmpty(messageField.text))
             {
+                if (messageField.text.Contains("START"))
+                {
+                    SceneLoaderManager.Instance.LoadSceneNet("Gameplay");
+                    return;
+                }
                 LobbySaver.CurrentLobby.SendChatString(messageField.text);
             }
             messageField.gameObject.SetActive(false);
@@ -189,30 +284,6 @@ public class UIManager : MonoBehaviour
     {
         SteamFriends.OpenGameInviteOverlay(LobbySaver.CurrentLobby.Id);
     }
-
-    /*
-    public void SetHostLobbyButtonMethod(UnityAction method)
-    {
-        hostLobbyButton.onClick.AddListener(method);
-        
-    }
-
-    public void SetJoinLobbyButtonMethod(UnityAction method)
-    {
-        joinLobbyButton.onClick.AddListener(method);
-        Debug.Log("yes2");
-    }
-
-    public void SetReturnToMenuButtonMethod(UnityAction method)
-    {
-        backToMenuButton.onClick.AddListener(method);
-    }
-    
-    public void SetStartGameButtonMethod(UnityAction method)
-    {
-        startGameButton.onClick.AddListener(method);
-    }
-    */
 
 
     public void SetMenuState(MenuStates state)

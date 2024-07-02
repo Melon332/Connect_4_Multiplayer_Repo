@@ -118,7 +118,6 @@ public class GameManager : NetworkBehaviour
         SpawnTile(column, row, playerIndex);
         GameResult(playerIndex);
     }
-
     private void SpawnTile(int column, int row, int playerIndex)
     {
         Transform col = visualBoard.GetColumnTransform(column);
@@ -177,7 +176,6 @@ public class GameManager : NetworkBehaviour
         GiveWinnerFirstTurn(playerIndexZeroed);
         winnerID = playerIndexZeroed;
         players[winnerID].Wins += 1;
-        //TODO: Add end game logic here
     }
 
     private void InitalizeUI()
@@ -287,6 +285,7 @@ public class GameManager : NetworkBehaviour
     {
         ShutdownConnection();
         SceneLoaderManager.Instance.LoadScene("MainMenu");
+        CharacterCustomizationManager.Instance.ClearCustomizations();
     }
 
     private void ShutdownConnection()

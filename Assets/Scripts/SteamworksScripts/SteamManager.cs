@@ -32,7 +32,6 @@ public class SteamManager : MonoBehaviour
                 return;
             }
         }
-        Debug.Log("?");
     }
     
     public void LeaveLobby()
@@ -40,6 +39,7 @@ public class SteamManager : MonoBehaviour
         LobbySaver.CurrentLobby.Leave();
         UIManager.Instance.LeftLobby("");
         NetworkManager.Singleton.Shutdown();
+        CharacterCustomizationManager.Instance.ClearCustomizations();
     }
     
     private async void SteamFriendsOnGameLobbyJoinRequested(Lobby lobby, SteamId steamID)
@@ -52,11 +52,13 @@ public class SteamManager : MonoBehaviour
         LobbySaver.CurrentLobby = lobby;
         UIManager.Instance.JoinedLobby(lobby.Id.ToString());
         LobbySaver.CurrentLobby.SendChatString("has joined the match!");
+        CharacterCustomizationManager.Instance.AddLocalCustomization();
         
         if(NetworkManager.Singleton.IsHost) return;
         NetworkManager.Singleton.gameObject.GetComponent<FacepunchTransport>().targetSteamId = lobby.Owner.Id;
         NetworkManager.Singleton.StartClient();
-        UIManager.Instance.ToggleStartGameButton(lobby.IsOwnedBy(SteamClient.SteamId));
+        UIManager.Instance.ToggleStartGameButton(false);
+        UIManager.Instance.ToggleWaitingForPlayerText(false);
     }
 
     private void SteamMatchmakingOnLobbyCreated(Result result, Lobby lobby)
@@ -65,7 +67,8 @@ public class SteamManager : MonoBehaviour
         lobby.SetPublic();
         lobby.SetJoinable(true);
         NetworkManager.Singleton.StartHost();
-        UIManager.Instance.ToggleStartGameButton(lobby.IsOwnedBy(SteamClient.SteamId));
+        UIManager.Instance.ToggleStartGameButton(false);
+        UIManager.Instance.ToggleWaitingForPlayerText(true);
     }
     
     private void SteamMatchmakingOnChatMessage(Lobby lobby, Friend sender, string message)
@@ -86,7 +89,7 @@ public class SteamManager : MonoBehaviour
     
     private void SteamMatchmakingOnLobbyMemberLeave(Lobby lobby, Friend user)
     {
-        lobby.SendChatString($"{user.Name} has left the match!");
+        LeaveLobby();
     }
 
     public void ServerStartGame()
