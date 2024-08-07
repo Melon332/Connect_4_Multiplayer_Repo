@@ -37,6 +37,7 @@ public class GameManager : NetworkBehaviour
     private GameObject tileToLerp;
     private float yPos;
     private float sinTime;
+    public bool gameOver { private set; get; }
     
     private void Awake()
     {
@@ -163,6 +164,7 @@ public class GameManager : NetworkBehaviour
 
     private void EndGame(bool tie, int playerIndex = -1)
     {
+        gameOver = true;
         gameUIManager.ToggleEndGamePanel(true);
         gameUIManager.ToggleHUDPanel(false);
         if (tie)
@@ -176,6 +178,7 @@ public class GameManager : NetworkBehaviour
         GiveWinnerFirstTurn(playerIndexZeroed);
         winnerID = playerIndexZeroed;
         players[winnerID].Wins += 1;
+        Debug.Log("Twice?");
     }
 
     private void InitalizeUI()
@@ -210,6 +213,7 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     public void ResetBoardRpc()
     {
+        gameOver = false;
         currentPlayingBoard.ResetBoard();
         ResetAllTiles();
         InitalizeUI();

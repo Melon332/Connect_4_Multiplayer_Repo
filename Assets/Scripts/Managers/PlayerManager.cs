@@ -5,6 +5,7 @@ using System.Linq;
 using Steamworks;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class PlayerManager : NetworkBehaviour
@@ -26,9 +27,20 @@ public class PlayerManager : NetworkBehaviour
     private Action<int> SetTileAction;
 
     private CharacterContainer ownedCharacterContainer;
+    private InputManager inputManager;
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        if (IsLocalPlayer)
+        {
+            inputManager = new InputManager(GetComponent<PlayerInput>());
+            inputManager.OnLeftMouseClickAction += MouseClick;
+            inputManager.OnPauseButtonPressedAction += PauseGame;
+            inputManager.OnToggleChatBoxButtonPressedAction += ToggleChatBox;
+            inputManager.OnMouseMoveAction += HoveringOverRow;
+            inputManager.EnableInput();
+            
+        }
         PlayerID = (int)OwnerClientId;
         if (PlayerID == 0)
         {
@@ -63,60 +75,16 @@ public class PlayerManager : NetworkBehaviour
         }
     }
 
-    private void Update()
+    private void ToggleChatBox()
     {
         if (!IsOwner) return;
-        if (Input.GetKeyDown(KeyCode.Return))
-        {
-            UIManager.Instance.ToggleChatBox();
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            GameManager.Instance?.TestPrintBoard();
-        }
-        
-        ProcessInput();
+        UIManager.Instance.ToggleChatBox();
     }
-
-    private void ProcessInput()
+    
+    private void PauseGame()
     {
         if (!inGame) return;
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            GameManager.Instance.PauseGame(!IsPaused);
-        }
-        HoveringOverRow();
-        if (!IsMyTurn || IsPaused || GameManager.Instance.IsDroppingTile) return;
-        MouseClick();
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            SetTileAction.Invoke(0);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            SetTileAction.Invoke(1);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            SetTileAction.Invoke(2);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            SetTileAction.Invoke(3);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            SetTileAction.Invoke(4);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            SetTileAction.Invoke(5);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha7))
-        {
-            SetTileAction.Invoke(6);
-        }
+        GameManager.Instance.PauseGame(!IsPaused);
     }
 
     [Rpc(SendTo.Server)]
@@ -144,9 +112,10 @@ public class PlayerManager : NetworkBehaviour
             eyes);
     }
 
-    private void HoveringOverRow()
+    private void HoveringOverRow(Vector2 mousePos)
     {
-        Ray ray = cameraMain.ScreenPointToRay(Input.mousePosition);
+        if (!inGame) return;
+        Ray ray = cameraMain.ScreenPointToRay(mousePos);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit))
         {
@@ -166,12 +135,11 @@ public class PlayerManager : NetworkBehaviour
 
     private void MouseClick()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (!inGame) return;
+        if (!IsMyTurn || IsPaused || GameManager.Instance.IsDroppingTile || GameManager.Instance.gameOver) return;
+        if (currentHoveringRow)
         {
-            if (currentHoveringRow)
-            {
-                SetTileAction?.Invoke(currentHoveringRow.number);
-            }
+            SetTileAction?.Invoke(currentHoveringRow.number);
         }
     }
     
