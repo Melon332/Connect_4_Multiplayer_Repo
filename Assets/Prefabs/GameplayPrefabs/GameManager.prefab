@@ -73,6 +73,8 @@ MonoBehaviour:
   offsetY: 0.3
   columns: 7
   rows: 7
-  devMode: 0
+  devMode: 1
   tileMoveSpeed: 2
+  phantomTiles: []
+  yPosPhantomOffset: 0.3
   secondsToShowTurnText: 2

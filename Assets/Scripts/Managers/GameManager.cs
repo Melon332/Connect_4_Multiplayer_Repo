@@ -20,6 +20,8 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private int columns, rows;
     [SerializeField] private bool devMode;
     [SerializeField] private float tileMoveSpeed;
+    [SerializeField] private List<GameObject> phantomTiles;
+    [SerializeField] private float yPosPhantomOffset = 0.3f;
 
     [Header("UI timing variables")] 
     [SerializeField] private float secondsToShowTurnText = 2.0f;
@@ -35,6 +37,7 @@ public class GameManager : NetworkBehaviour
     private GameObject tileToLerp;
     private float yPos;
     private float sinTime;
+    public bool gameOver { private set; get; }
     
     private void Awake()
     {
@@ -116,7 +119,6 @@ public class GameManager : NetworkBehaviour
         SpawnTile(column, row, playerIndex);
         GameResult(playerIndex);
     }
-
     private void SpawnTile(int column, int row, int playerIndex)
     {
         Transform col = visualBoard.GetColumnTransform(column);
@@ -126,6 +128,21 @@ public class GameManager : NetworkBehaviour
         spawnedTiles.Add(tile);
         tileToLerp = tile;
         yPos = tile.transform.position.y - offset;
+    }
+
+    public void SetPhantomTilePosition(int playerIndex, Transform rowObject)
+    {
+        GameObject tile = phantomTiles[playerIndex];
+        TogglePhantomTile(playerIndex, true);
+        tile.transform.position = new Vector3(rowObject.transform.position.x,
+            rowObject.transform.position.y + yPosPhantomOffset, rowObject.transform.position.z);
+    }
+
+    public void TogglePhantomTile(int playerIndex, bool toggle)
+    {
+        GameObject tile = phantomTiles[playerIndex];
+        if (tile.activeInHierarchy == toggle) return;
+        tile.SetActive(toggle);
     }
 
     private void GameResult(int playerIndex)
@@ -147,6 +164,7 @@ public class GameManager : NetworkBehaviour
 
     private void EndGame(bool tie, int playerIndex = -1)
     {
+        gameOver = true;
         gameUIManager.ToggleEndGamePanel(true);
         gameUIManager.ToggleHUDPanel(false);
         if (tie)
@@ -160,7 +178,7 @@ public class GameManager : NetworkBehaviour
         GiveWinnerFirstTurn(playerIndexZeroed);
         winnerID = playerIndexZeroed;
         players[winnerID].Wins += 1;
-        //TODO: Add end game logic here
+        Debug.Log("Twice?");
     }
 
     private void InitalizeUI()
@@ -195,6 +213,7 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     public void ResetBoardRpc()
     {
+        gameOver = false;
         currentPlayingBoard.ResetBoard();
         ResetAllTiles();
         InitalizeUI();
@@ -270,6 +289,7 @@ public class GameManager : NetworkBehaviour
     {
         ShutdownConnection();
         SceneLoaderManager.Instance.LoadScene("MainMenu");
+        CharacterCustomizationManager.Instance.ClearCustomizations();
     }
 
     private void ShutdownConnection()

@@ -336,6 +336,58 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &834665949
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 834665951}
+  - component: {fileID: 834665950}
+  m_Layer: 0
+  m_Name: CustomizationManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &834665950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 834665949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46dad975bfd86fe4fa36bb0d52264469, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allTorsoPart:
+  - {fileID: 11400000, guid: 6e9e2a5946a17214e8dc2c7aa0f4644f, type: 2}
+  allHeadPart:
+  - {fileID: 11400000, guid: a109226d7c7ea4245aaebce14b0b4a92, type: 2}
+  allEyesPart:
+  - {fileID: 11400000, guid: 5ef41bd85eaece5449f7c586314af40a, type: 2}
+  allEarsPart:
+  - {fileID: 11400000, guid: 25b5d24bbb2a8d841b01a99c85246ecd, type: 2}
+--- !u!4 &834665951
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 834665949}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1920, y: 2085, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &966843592
 GameObject:
   m_ObjectHideFlags: 0
