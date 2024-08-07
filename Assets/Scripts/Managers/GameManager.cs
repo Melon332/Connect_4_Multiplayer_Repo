@@ -82,7 +82,6 @@ public class GameManager : NetworkBehaviour
         currentPlayingBoard.InitalizeBoard();
         visualBoard = Instantiate(currentSelectedPlayBoard, Vector3.zero, Quaternion.identity).GetComponent<VisualBoard>();
         gameUIManager.InitalizePlayerScoreText(players);
-        Debug.LogError("Started game!");
     }
 
     public void AddPlayer(PlayerManager player)
@@ -178,7 +177,6 @@ public class GameManager : NetworkBehaviour
         GiveWinnerFirstTurn(playerIndexZeroed);
         winnerID = playerIndexZeroed;
         players[winnerID].Wins += 1;
-        Debug.Log("Twice?");
     }
 
     private void InitalizeUI()

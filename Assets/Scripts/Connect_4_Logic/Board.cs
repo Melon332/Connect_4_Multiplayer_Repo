@@ -40,7 +40,6 @@ public class Board
             //demo += 0;
             demo += "\n";
         }
-        Debug.Log(demo);
     }
 
     public void PrintBoard()

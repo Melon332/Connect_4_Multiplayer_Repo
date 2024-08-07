@@ -53,13 +53,11 @@ public class CharacterCustomizationManager : MonoBehaviourSingletonPersistent<Ch
         CharacterContainer container = new CharacterContainer();
         container.SaveData(torso, head, ears, eyes);
         playersCustomizations.Add(container);
-        Debug.LogError("Customization Added!");
     }
 
     public void AddLocalCustomization()
     {
         playersCustomizations.Add(localCharacterContainer);
-        Debug.LogError("Customization Added!");
     }
 
     public void ClearCustomizations()
