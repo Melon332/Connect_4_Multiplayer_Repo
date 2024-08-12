@@ -69,7 +69,10 @@ public class PlayerManager : NetworkBehaviour
         if (scenename == "Gameplay")
         {
             GameManager.Instance.AddPlayer(this);
-            PlayerName = LobbySaver.CurrentLobby.Members.ToList()[PlayerID].Name;
+            if (!DeveloperMode.LocalMode)
+            {
+                PlayerName = LobbySaver.CurrentLobby.Members.ToList()[PlayerID].Name;
+            }
             inGame = true;
             cameraMain = FindObjectOfType<Camera>();
         }

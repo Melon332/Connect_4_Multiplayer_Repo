@@ -12,11 +12,23 @@ public class SteamManager : MonoBehaviour
 {
     public async void HostLobby()
     {
+        if (DeveloperMode.LocalMode)
+        {
+            NetworkManager.Singleton.StartHost();
+            UIManager.Instance.JoinedLobby("helo");
+            return;
+        }
         await SteamMatchmaking.CreateLobbyAsync(2);
     }
 
     public async void JoinLobbyWithID()
     {
+        if (DeveloperMode.LocalMode)
+        {
+            NetworkManager.Singleton.StartClient();
+            UIManager.Instance.JoinedLobby("helo");
+            return;
+        }
         ulong ID;
         if (!ulong.TryParse(UIManager.Instance.GetLobbyIDText(), out ID))
         {
